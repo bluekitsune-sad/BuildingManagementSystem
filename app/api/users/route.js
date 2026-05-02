@@ -3,6 +3,7 @@ import User from '@/models/User'
 import { verifyToken } from '@/lib/auth/jwt'
 import { hashPassword } from '@/lib/auth/hash'
 import { NextResponse } from 'next/server'
+import { cacheHeaders } from '@/lib/cache'
 
 export async function GET(request) {
   await connectDB()
@@ -13,8 +14,12 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const users = await User.find({}, '-password')
-  return NextResponse.json(users)
+  const users = await User.find({}, '-password').sort({ name: 1 })
+  const response = NextResponse.json(users)
+  Object.entries(cacheHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
 }
 
 export async function POST(request) {

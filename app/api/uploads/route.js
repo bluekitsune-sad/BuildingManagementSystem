@@ -3,6 +3,7 @@ import Upload from '@/models/Upload'
 import { verifyToken } from '@/lib/auth/jwt'
 import { uploadSchema } from '@/lib/validators/upload'
 import { NextResponse } from 'next/server'
+import { cacheHeaders } from '@/lib/cache'
 
 export async function GET(request) {
   await connectDB()
@@ -26,7 +27,11 @@ export async function GET(request) {
     }).populate('uploadedBy', 'name').sort({ createdAt: -1 })
   }
 
-  return NextResponse.json(uploads)
+  const response = NextResponse.json(uploads)
+  Object.entries(cacheHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
 }
 
 export async function POST(request) {

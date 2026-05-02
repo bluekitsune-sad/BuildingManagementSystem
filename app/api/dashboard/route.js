@@ -2,17 +2,14 @@ import { connectDB } from '@/lib/db/connect'
 import User from '@/models/User'
 import Upload from '@/models/Upload'
 import Expense from '@/models/Expense'
+import { verifyToken } from '@/lib/auth/jwt'
 import { NextResponse } from 'next/server'
-
-function getAuth(request) {
-  const token = request.cookies.get('token')?.value
-  const { verifyToken } = require('@/lib/auth/jwt')
-  return verifyToken(token)
-}
+import { cacheHeaders } from '@/lib/cache'
 
 export async function GET(request) {
   await connectDB()
-  const decoded = getAuth(request)
+  const token = request.cookies.get('token')?.value
+  const decoded = verifyToken(token)
 
   if (!decoded) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -108,11 +105,15 @@ export async function GET(request) {
     { $sort: { total: -1 } },
   ])
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     stats,
     recentExpenses,
     recentUploads,
     expenseByCategory,
     role: decoded.role,
   })
+  Object.entries(cacheHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
 }

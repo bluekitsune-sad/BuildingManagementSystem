@@ -13,5 +13,8 @@ const ExpenseSchema = new mongoose.Schema({
 
 ExpenseSchema.index({ date: -1 })
 ExpenseSchema.index({ category: 1 })
+ExpenseSchema.index({ visibleTo: 1, date: -1 })
+ExpenseSchema.index({ createdBy: 1 })
+ExpenseSchema.index({ updatedAt: -1 })
 
 export default mongoose.models.Expense || mongoose.model('Expense', ExpenseSchema)

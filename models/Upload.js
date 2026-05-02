@@ -19,4 +19,10 @@ UploadSchema.pre('save', function (next) {
   next()
 })
 
+UploadSchema.index({ createdAt: -1 })
+UploadSchema.index({ category: 1 })
+UploadSchema.index({ visibleTo: 1, createdAt: -1 })
+UploadSchema.index({ uploadedBy: 1 })
+UploadSchema.index({ type: 1 })
+
 export default mongoose.models.Upload || mongoose.model('Upload', UploadSchema)

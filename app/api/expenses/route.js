@@ -3,6 +3,7 @@ import Expense from '@/models/Expense'
 import { verifyToken } from '@/lib/auth/jwt'
 import { expenseSchema } from '@/lib/validators/expense'
 import { NextResponse } from 'next/server'
+import { cacheHeaders } from '@/lib/cache'
 
 export async function GET(request) {
   await connectDB()
@@ -13,14 +14,14 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  let expenses
   if (decoded.role === 'admin') {
-    const expenses = await Expense.find()
+    expenses = await Expense.find()
       .populate('createdBy', 'name')
       .populate('visibleTo', 'name')
       .sort({ date: -1 })
-    return NextResponse.json(expenses)
   } else {
-    const expenses = await Expense.find({
+    expenses = await Expense.find({
       $or: [
         { visibleTo: { $size: 0 } },
         { visibleTo: decoded.userId },
@@ -29,8 +30,13 @@ export async function GET(request) {
     })
       .populate('createdBy', 'name')
       .sort({ date: -1 })
-    return NextResponse.json(expenses)
   }
+
+  const response = NextResponse.json(expenses)
+  Object.entries(cacheHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
 }
 
 export async function POST(request) {
