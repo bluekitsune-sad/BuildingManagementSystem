@@ -21,7 +21,11 @@ export async function GET(request) {
     return NextResponse.json(expenses)
   } else {
     const expenses = await Expense.find({
-      visibleTo: decoded.userId,
+      $or: [
+        { visibleTo: { $size: 0 } },
+        { visibleTo: decoded.userId },
+        { visibleTo: { $exists: false } },
+      ],
     })
       .populate('createdBy', 'name')
       .sort({ date: -1 })

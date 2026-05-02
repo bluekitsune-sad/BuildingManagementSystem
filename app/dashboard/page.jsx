@@ -1,9 +1,31 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { IoPeopleOutline, IoFolderOutline, IoCashOutline, IoTrendingUpOutline, IoAddOutline, IoListOutline } from 'react-icons/io5'
+
+const statsConfig = {
+  totalUsers: { label: 'Total Users', icon: IoPeopleOutline, color: 'text-purple-400' },
+  totalUploads: { label: 'Total Uploads', icon: IoFolderOutline, color: 'text-blue-400' },
+  totalExpenses: { label: 'Total Expenses', icon: IoCashOutline, color: 'text-green-400' },
+  thisMonthExpenses: { label: 'This Month', icon: IoTrendingUpOutline, color: 'text-accent' },
+}
+
+const adminQuickActions = [
+  { label: 'Add Expense', href: '/dashboard/expenses', icon: IoAddOutline },
+  { label: 'Add Upload', href: '/dashboard/uploads', icon: IoAddOutline },
+  { label: 'Manage Users', href: '/dashboard/users', icon: IoListOutline },
+  { label: 'View Reports', href: '/dashboard/expenses', icon: IoListOutline },
+]
+
+const residentQuickActions = [
+  { label: 'View Expenses', href: '/dashboard/expenses', icon: IoListOutline },
+  { label: 'View Uploads', href: '/dashboard/uploads', icon: IoListOutline },
+]
 
 export default function DashboardPage() {
   const [data, setData] = useState({ stats: {}, recentExpenses: [], recentUploads: [], expenseByCategory: [] })
+  const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -11,24 +33,49 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(d => {
         setData(d)
+        setUserRole(d.role)
         setLoading(false)
       })
+      .catch(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="text-soft p-8">Loading dashboard...</div>
 
   const { stats, recentExpenses, recentUploads, expenseByCategory } = data
+  const isAdmin = userRole === 'admin'
+  const displayStats = Object.entries(stats).filter(([key]) => statsConfig[key])
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8 text-light">Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8 text-light">
+        Welcome {isAdmin ? 'Back, Admin' : 'Back'}
+      </h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard label="Total Users" value={stats.totalUsers || 0} />
-        <StatCard label="Total Uploads" value={stats.totalUploads || 0} />
-        <StatCard label="Total Expenses" value={`$${(stats.totalExpenses || 0).toLocaleString()}`} />
-        <StatCard label="This Month" value={`$${(stats.thisMonthExpenses || 0).toLocaleString()}`} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {displayStats.map(([key, value], i) => {
+          const config = statsConfig[key]
+          const Icon = config.icon
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="card p-6"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-soft text-sm">{config.label}</p>
+                <Icon className={`w-5 h-5 ${config.color}`} />
+              </div>
+              <p className="text-3xl font-bold text-light">
+                {typeof value === 'number' && (key.includes('Expenses') || key.includes('Month'))
+                  ? `$${value.toLocaleString()}`
+                  : value}
+              </p>
+            </motion.div>
+          )
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -46,7 +93,11 @@ export default function DashboardPage() {
                 <div key={exp._id} className="flex justify-between items-center py-2 border-b border-secondary">
                   <div>
                     <p className="text-light text-sm font-medium">{exp.title}</p>
-                    <p className="text-soft text-xs">{exp.category} · {new Date(exp.date).toLocaleDateString()}</p>
+                    <p className="text-soft text-xs">
+                      {exp.category === 'others' ? (exp.otherCategory || 'Other') : exp.category}
+                      {' · '}
+                      {new Date(exp.date).toLocaleDateString()}
+                    </p>
                   </div>
                   <span className="text-accent font-semibold">${exp.amount}</span>
                 </div>
@@ -69,7 +120,11 @@ export default function DashboardPage() {
                 <div key={upload._id} className="flex justify-between items-center py-2 border-b border-secondary">
                   <div>
                     <p className="text-light text-sm font-medium">{upload.title}</p>
-                    <p className="text-soft text-xs capitalize">{upload.category} · {upload.type}</p>
+                    <p className="text-soft text-xs capitalize">
+                      {upload.category === 'others' ? (upload.otherCategory || 'Other') : upload.category}
+                      {' · '}
+                      {upload.type}
+                    </p>
                   </div>
                   <span className="text-soft text-xs">{new Date(upload.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -90,7 +145,9 @@ export default function DashboardPage() {
                 return (
                   <div key={cat._id}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="capitalize text-light">{cat._id}</span>
+                      <span className="capitalize text-light">
+                        {cat._id === 'others' ? 'Other' : cat._id}
+                      </span>
                       <span className="text-soft">${cat.total} ({percentage}%)</span>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
@@ -110,22 +167,22 @@ export default function DashboardPage() {
         <div className="card p-6">
           <h2 className="text-xl font-semibold text-light mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
-            <Link href="/dashboard/expenses" className="btn-primary text-center block">Add Expense</Link>
-            <Link href="/dashboard/uploads" className="btn-primary text-center block">Add Upload</Link>
-            <Link href="/dashboard/users" className="btn-primary text-center block">Manage Users</Link>
-            <Link href="/dashboard/expenses" className="btn-primary text-center block">View Reports</Link>
+            {(isAdmin ? adminQuickActions : residentQuickActions).map((action) => {
+              const ActionIcon = action.icon
+              return (
+                <Link
+                  key={action.href + action.label}
+                  href={action.href}
+                  className="btn-primary flex items-center justify-center gap-2"
+                >
+                  <ActionIcon className="w-4 h-4" />
+                  {action.label}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function StatCard({ label, value }) {
-  return (
-    <div className="card p-6">
-      <p className="text-soft text-sm mb-2">{label}</p>
-      <p className="text-3xl font-bold text-light">{value}</p>
     </div>
   )
 }

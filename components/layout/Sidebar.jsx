@@ -5,15 +5,20 @@ import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoGridOutline, IoFolderOutline, IoCashOutline, IoPeopleOutline, IoMenu, IoClose } from 'react-icons/io5'
 
-const menuItems = [
+const allMenuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: IoGridOutline },
   { path: '/dashboard/uploads', label: 'Uploads', icon: IoFolderOutline },
   { path: '/dashboard/expenses', label: 'Expenses', icon: IoCashOutline },
+]
+
+const adminOnlyItems = [
   { path: '/dashboard/users', label: 'Users', icon: IoPeopleOutline },
 ]
 
-function NavLinks() {
+function NavLinks({ userRole }) {
   const pathname = usePathname()
+  const menuItems = userRole === 'admin' ? [...allMenuItems, ...adminOnlyItems] : allMenuItems
+
   return (
     <nav className="space-y-2 flex-1">
       {menuItems.map((item) => (
@@ -64,14 +69,14 @@ function UserSection() {
   )
 }
 
-function SidebarContent() {
+function SidebarContent({ userRole }) {
   return (
     <>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-light">BMS</h1>
         <p className="text-xs text-soft mt-1">Building Management</p>
       </div>
-      <NavLinks />
+      <NavLinks userRole={userRole} />
       <UserSection />
     </>
   )
@@ -79,6 +84,14 @@ function SidebarContent() {
 
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userRole, setUserRole] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(u => { if (u?.role) setUserRole(u.role) })
+      .catch(() => {})
+  }, [])
 
   return (
     <>
@@ -120,14 +133,14 @@ export default function Sidebar() {
                 <IoClose className="w-5 h-5 text-light" />
               </button>
             </div>
-            <SidebarContent />
+            <SidebarContent userRole={userRole} />
           </motion.aside>
         )}
       </AnimatePresence>
 
       {/* Desktop Sidebar - always visible on lg+, NO framer-motion transform */}
       <aside className="hidden lg:flex lg:flex-col glass w-64 min-h-screen p-6 shrink-0">
-        <SidebarContent />
+        <SidebarContent userRole={userRole} />
       </aside>
     </>
   )
