@@ -1,4 +1,3 @@
-import { connectDB } from '@/lib/db/connect'
 import { verifyToken } from '@/lib/auth/jwt'
 import { uploadToCloudinary, validateUploadFile } from '@/lib/cloudinary'
 import { NextResponse } from 'next/server'
@@ -30,10 +29,9 @@ export async function POST(request) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer())
-    const { Readable } = await import('stream')
-    const stream = Readable.from(buffer)
+    const resourceType = file.type.startsWith('image/') ? 'image' : 'pdf'
 
-    const result = await uploadToCloudinary(stream)
+    const result = await uploadToCloudinary(buffer, resourceType)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Upload error:', error)
