@@ -1,6 +1,7 @@
 import { connectDB } from '@/lib/db/connect'
 import User from '@/models/User'
 import { verifyToken } from '@/lib/auth/jwt'
+import { hashPassword } from '@/lib/auth/hash'
 import { NextResponse } from 'next/server'
 
 export async function GET(request) {

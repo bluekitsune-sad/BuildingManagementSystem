@@ -8,11 +8,17 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['admin', 'resident'], default: 'resident' },
   permissions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Upload' }],
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 })
 
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
   this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
+
+UserSchema.pre('save', function (next) {
+  this.updatedAt = Date.now()
   next()
 })
 
