@@ -1,6 +1,6 @@
-'use client'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+"use client";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
   return (
@@ -15,8 +15,8 @@ export default function HomePage() {
           Building Management System
         </h1>
         <p className="text-xl mb-8 text-soft">
-          A modern platform for building committees and residents to manage expenses,
-          utilities, and shared data securely.
+          A modern platform for building committees and residents to manage
+          expenses, utilities, and shared data securely.
         </p>
         <div className="space-x-4">
           <Link href="/login">
@@ -28,7 +28,7 @@ export default function HomePage() {
               Login
             </motion.button>
           </Link>
-          <Link href="/register">
+          {/* <Link href="/register">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -36,9 +36,9 @@ export default function HomePage() {
             >
               Register
             </motion.button>
-          </Link>
+          </Link> */}
         </div>
       </motion.div>
     </div>
-  )
+  );
 }
