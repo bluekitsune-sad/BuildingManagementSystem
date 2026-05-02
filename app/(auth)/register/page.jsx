@@ -10,7 +10,6 @@ export default function RegisterPage() {
     name: "",
     email: "",
     password: "",
-    role: "resident",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

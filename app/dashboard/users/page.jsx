@@ -25,8 +25,13 @@ export default function UsersPage() {
       fetch("/api/auth/me").then((r) => r.json()),
     ])
       .then(([usersData, uploadsData, userData]) => {
-        setUsers(usersData);
-        setAllUsers(usersData);
+        if (userData.error) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        setUsers(Array.isArray(usersData) ? usersData : []);
+        setAllUsers(Array.isArray(usersData) ? usersData : []);
         setUser(userData);
         setLoading(false);
       })
@@ -91,7 +96,15 @@ export default function UsersPage() {
   if (loading) return <div className="text-soft p-8">Loading users...</div>;
 
   const isAdmin = user?.role === "admin";
-  if (!isAdmin) return <div className="text-soft p-8">Access denied</div>;
+  if (!isAdmin) {
+    return (
+      <div className="text-soft p-8">
+        <p className="text-xl font-semibold text-light mb-2">Access denied</p>
+        <p className="text-sm">Only administrators can manage users.</p>
+        {!user && <p className="text-sm mt-2">Please log in again.</p>}
+      </div>
+    );
+  }
 
   return (
     <div>

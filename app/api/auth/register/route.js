@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request) {
   await connectDB()
-  const { name, email, password, role } = await request.json()
+  const { name, email, password } = await request.json()
 
   const existingUser = await User.findOne({ email })
   if (existingUser) {
@@ -17,7 +17,7 @@ export async function POST(request) {
     name,
     email,
     password: hashedPassword,
-    role: role || 'resident',
+    role: 'resident',
   })
 
   return NextResponse.json({ message: 'User created successfully' }, { status: 201 })
