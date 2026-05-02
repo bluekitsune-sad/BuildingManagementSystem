@@ -3,6 +3,29 @@ import Upload from '@/models/Upload'
 import { verifyToken } from '@/lib/auth/jwt'
 import { NextResponse } from 'next/server'
 
+export async function PUT(request, { params }) {
+  await connectDB()
+  const token = request.cookies.get('token')?.value
+  const decoded = verifyToken(token)
+
+  if (!decoded || decoded.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+
+  const { title, fileUrl, type, category, visibleTo } = await request.json()
+  const upload = await Upload.findByIdAndUpdate(
+    params.id,
+    { title, fileUrl, type, category, visibleTo },
+    { new: true }
+  ).populate('uploadedBy', 'name').populate('visibleTo', 'name')
+
+  if (!upload) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  return NextResponse.json(upload)
+}
+
 export async function DELETE(request, { params }) {
   await connectDB()
   const token = request.cookies.get('token')?.value

@@ -26,11 +26,29 @@ body {
   padding: 8px 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .btn-primary:hover {
   background-color: #b38f86;
   transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: #213847;
+  color: #dbd0bf;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid #486e6b;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-secondary:hover {
+  background-color: #2a4a5c;
 }
 
 .input-field {
@@ -45,4 +63,24 @@ body {
 .input-field:focus {
   outline: none;
   border-color: #b38f86;
+}
+
+.input-field::placeholder {
+  color: #8a7a6e;
+}
+
+.text-light {
+  color: #dbd0bf;
+}
+
+.text-soft {
+  color: #b38f86;
+}
+
+.text-accent {
+  color: #486e6b;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }

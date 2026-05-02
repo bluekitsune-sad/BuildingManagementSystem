@@ -13,14 +13,18 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const { name, email, password, role } = await request.json()
-  const updateData = { name, email, role }
+  const { name, email, password, role, permissions } = await request.json()
+  const updateData = {}
 
+  if (name !== undefined) updateData.name = name
+  if (email !== undefined) updateData.email = email
+  if (role !== undefined) updateData.role = role
+  if (permissions !== undefined) updateData.permissions = permissions
   if (password) {
     updateData.password = await hashPassword(password)
   }
 
-  const user = await User.findByIdAndUpdate(params.id, updateData, { new: true })
+  const user = await User.findByIdAndUpdate(params.id, updateData, { new: true }).select('-password')
   return NextResponse.json(user)
 }
 
