@@ -31,10 +31,10 @@ export async function POST(request) {
     const buffer = Buffer.from(await file.arrayBuffer())
     const resourceType = file.type.startsWith('image/') ? 'image' : 'pdf'
 
-    const result = await uploadToCloudinary(buffer, resourceType)
+    const result = await uploadToCloudinary(buffer, resourceType, file.type)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Upload error:', error)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 })
   }
 }
