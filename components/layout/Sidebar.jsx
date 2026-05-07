@@ -7,7 +7,7 @@ import { IoGridOutline, IoFolderOutline, IoCashOutline, IoPeopleOutline, IoMenu,
 
 const allMenuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: IoGridOutline },
-  { path: '/dashboard/uploads', label: 'Uploads', icon: IoFolderOutline },
+ // { path: '/dashboard/uploads', label: 'Uploads', icon: IoFolderOutline },
   { path: '/dashboard/expenses', label: 'Expenses', icon: IoCashOutline },
 ]
 
