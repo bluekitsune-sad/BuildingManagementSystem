@@ -107,7 +107,7 @@ export async function POST(request) {
       email,
       // password: hashedPassword,
       password: password,
-      role: role || 'user',
+      role: role || 'resident',
     })
 
     return NextResponse.json(
