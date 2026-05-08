@@ -1,7 +1,6 @@
 import { connectDB } from '@/lib/db/connect'
 import User from '@/models/User'
 import { verifyToken } from '@/lib/auth/jwt'
-// import { hashPassword } from '@/lib/auth/hash'
 import { NextResponse } from 'next/server'
 import { cacheHeaders } from '@/lib/cache'
 
@@ -29,7 +28,13 @@ export async function GET(request) {
 
     const users = await User.find({}, '-password').sort({ name: 1 })
 
-    const response = NextResponse.json(users)
+    const response = NextResponse.json(
+      {
+        success: true,
+        users,
+      },
+      { status: 200 }
+    )
 
     Object.entries(cacheHeaders).forEach(([key, value]) => {
       response.headers.set(key, value)
@@ -72,9 +77,9 @@ export async function POST(request) {
 
     const body = await request.json()
 
-    console.log('REQUEST BODY:', body)
-
     const { name, email, password, role } = body
+
+    console.log('REQUEST BODY:', body)
 
     // Validation
     if (!name || !email || !password) {
@@ -86,7 +91,7 @@ export async function POST(request) {
       )
     }
 
-    // Existing user check
+    // Check duplicate user
     const existingUser = await User.findOne({ email })
 
     if (existingUser) {
@@ -98,27 +103,26 @@ export async function POST(request) {
       )
     }
 
-    // Hash password
-    // const hashedPassword = await hashPassword(password)
-
-    // Create user
+    // Create user (password will be hashed by Mongoose pre-save hook)
     const user = await User.create({
       name,
       email,
-      // password: hashedPassword,
-      password: password,
+      password,
       role: role || 'resident',
     })
+
+    // IMPORTANT: convert to safe plain object (prevents Vercel 500 crash)
+    const safeUser = {
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }
 
     return NextResponse.json(
       {
         success: true,
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: safeUser,
       },
       { status: 201 }
     )
