@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 
 export async function PUT(request, { params }) {
   try {
+    const { id } = await params
     await connectDB()
 
     const token = request.cookies.get('token')?.value
@@ -23,7 +24,7 @@ export async function PUT(request, { params }) {
     if (permissions !== undefined) updateData.permissions = permissions
 
     if (email !== undefined) {
-      const existingUser = await User.findOne({ email, _id: { $ne: params.id } })
+      const existingUser = await User.findOne({ email, _id: { $ne: id } })
       if (existingUser) {
         return NextResponse.json(
           { error: 'Email already in use by another user' },
@@ -37,7 +38,7 @@ export async function PUT(request, { params }) {
       updateData.password = await hashPassword(password)
     }
 
-    const user = await User.findByIdAndUpdate(params.id, updateData, { new: true }).select('-password')
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password')
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -55,6 +56,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const { id } = await params
     await connectDB()
 
     const token = request.cookies.get('token')?.value
@@ -64,7 +66,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const user = await User.findByIdAndDelete(params.id)
+    const user = await User.findByIdAndDelete(id)
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
