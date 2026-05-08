@@ -1,7 +1,7 @@
 import { connectDB } from '@/lib/db/connect'
 import User from '@/models/User'
 import { verifyToken } from '@/lib/auth/jwt'
-import { hashPassword } from '@/lib/auth/hash'
+// import { hashPassword } from '@/lib/auth/hash'
 import { NextResponse } from 'next/server'
 import { cacheHeaders } from '@/lib/cache'
 
@@ -99,13 +99,14 @@ export async function POST(request) {
     }
 
     // Hash password
-    const hashedPassword = await hashPassword(password)
+    // const hashedPassword = await hashPassword(password)
 
     // Create user
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      // password: hashedPassword,
+      password: password,
       role: role || 'user',
     })
 
