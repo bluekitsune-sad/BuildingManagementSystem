@@ -19,12 +19,14 @@ export default function UsersPage() {
   const [uploads, setUploads] = useState([]);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/users").then((r) => r.json()),
-      fetch("/api/uploads").then((r) => r.json()),
-      fetch("/api/auth/me").then((r) => r.json()),
-    ])
-      .then(([usersData, uploadsData, userData]) => {
+    async function loadData() {
+      try {
+        const [usersData, uploadsData, userData] = await Promise.all([
+          fetch("/api/users").then((r) => r.json()).catch(() => ({ users: [] })),
+          fetch("/api/uploads").then((r) => r.json()).catch(() => ({ uploads: [] })),
+          fetch("/api/auth/me").then((r) => r.json()).catch(() => ({ error: "Failed" })),
+        ]);
+
         if (userData.error) {
           setUser(null);
           setLoading(false);
@@ -33,9 +35,12 @@ export default function UsersPage() {
         setUsers(Array.isArray(usersData.users) ? usersData.users : []);
         setUploads(Array.isArray(uploadsData.uploads) ? uploadsData.uploads : []);
         setUser(userData);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch {
+        // ignore
+      }
+      setLoading(false);
+    }
+    loadData();
   }, []);
 
   async function handleSubmit(e) {
