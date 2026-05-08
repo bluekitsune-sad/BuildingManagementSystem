@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
@@ -17,6 +16,7 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [permissionModal, setPermissionModal] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
+  const [uploads, setUploads] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -30,8 +30,8 @@ export default function UsersPage() {
           setLoading(false);
           return;
         }
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setAllUsers(Array.isArray(usersData) ? usersData : []);
+        setUsers(Array.isArray(usersData.users) ? usersData.users : []);
+        setUploads(Array.isArray(uploadsData.uploads) ? uploadsData.uploads : []);
         setUser(userData);
         setLoading(false);
       })
@@ -49,8 +49,7 @@ export default function UsersPage() {
     });
     if (res.ok) {
       const updated = await fetch("/api/users").then((r) => r.json());
-      setUsers(updated);
-      setAllUsers(updated);
+      setUsers(updated.users || []);
       resetForm();
     }
   }
@@ -59,7 +58,6 @@ export default function UsersPage() {
     if (!confirm("Delete this user?")) return;
     await fetch(`/api/users/${id}`, { method: "DELETE" });
     setUsers(users.filter((u) => u._id !== id));
-    setAllUsers(allUsers.filter((u) => u._id !== id));
   }
 
   function resetForm() {
@@ -80,8 +78,7 @@ export default function UsersPage() {
       body: JSON.stringify({ permissions: selectedPermissions }),
     });
     const updated = await fetch("/api/users").then((r) => r.json());
-    setUsers(updated);
-    setAllUsers(updated);
+    setUsers(updated.users || []);
     setPermissionModal(null);
   }
 
@@ -257,13 +254,23 @@ export default function UsersPage() {
               </p>
 
               <div className="space-y-2">
-                {allUsers.length === 0 ? (
+                {uploads.length === 0 ? (
                   <p className="text-soft text-sm">No uploads available</p>
                 ) : (
-                  // Show uploads as permission items
-                  <p className="text-soft text-sm">
-                    User can view data based on their role
-                  </p>
+                  uploads.map((upload) => (
+                    <label
+                      key={upload._id}
+                      className="flex items-center gap-3 p-2 rounded hover:bg-sidebar cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPermissions.includes(upload._id)}
+                        onChange={() => togglePermission(upload._id)}
+                        className="accent-accent"
+                      />
+                      <span className="text-sm text-light">{upload.title || upload.name || upload._id}</span>
+                    </label>
+                  ))
                 )}
               </div>
 
