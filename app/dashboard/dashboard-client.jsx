@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { IoPeopleOutline, IoFolderOutline, IoCashOutline, IoTrendingUpOutline, IoAddOutline, IoListOutline } from 'react-icons/io5'
+import { formatCurrency } from '@/lib/utils'
 
 const statsConfig = {
   totalUsers: { label: 'Total Users', icon: IoPeopleOutline, color: 'text-purple-400' },
@@ -52,7 +53,7 @@ export default function DashboardClient({ data }) {
               </div>
               <p className="text-3xl font-bold text-light">
                 {typeof value === 'number' && (key.includes('Expenses') || key.includes('Month'))
-                  ? `$${value.toLocaleString()}`
+                  ? formatCurrency(value)
                   : value}
               </p>
             </motion.div>
@@ -81,7 +82,7 @@ export default function DashboardClient({ data }) {
                       {new Date(exp.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className="text-accent font-semibold">${exp.amount}</span>
+                  <span className="text-accent font-semibold">{formatCurrency(exp.amount)}</span>
                 </div>
               ))
             )}
@@ -130,7 +131,7 @@ export default function DashboardClient({ data }) {
                       <span className="capitalize text-light">
                         {cat._id === 'others' ? 'Other' : cat._id}
                       </span>
-                      <span className="text-soft">${cat.total} ({percentage}%)</span>
+                      <span className="text-soft">{formatCurrency(cat.total)} ({percentage}%)</span>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
                       <div
