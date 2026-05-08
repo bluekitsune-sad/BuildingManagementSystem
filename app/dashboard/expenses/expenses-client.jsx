@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { validators } from '@/lib/validators/helpers'
+import { formatCurrency } from '@/lib/utils'
 
 export default function ExpensesClient({ data }) {
   const [expenses, setExpenses] = useState(data.expenses)
@@ -19,7 +20,7 @@ export default function ExpensesClient({ data }) {
     const v = validators
     const rules = {
       title: v.chain(v.required('Title is required'), v.maxLength(100, 'Title must be under 100 characters')),
-      amount: v.chain(v.required('Amount is required'), v.positiveNumber('Must be a positive number'), v.maxNumber(1000000, 'Cannot exceed $1,000,000')),
+      amount: v.chain(v.required('Amount is required'), v.positiveNumber('Must be a positive number'), v.maxNumber(1000000, 'Cannot exceed Rs. 1,000,000')),
       otherCategory: form.category === 'others' ? v.chain(v.required('Category name is required'), v.maxLength(50, 'Must be under 50 characters')) : () => '',
     }
     if (rules[name]) {
@@ -34,7 +35,7 @@ export default function ExpensesClient({ data }) {
     const v = validators
     const errors = {}
     const titleErr = v.chain(v.required('Title is required'), v.maxLength(100, 'Title must be under 100 characters'))(form.title)
-    const amountErr = v.chain(v.required('Amount is required'), v.positiveNumber('Must be a positive number'), v.maxNumber(1000000, 'Cannot exceed $1,000,000'))(form.amount)
+    const amountErr = v.chain(v.required('Amount is required'), v.positiveNumber('Must be a positive number'), v.maxNumber(1000000, 'Cannot exceed Rs. 1,000,000'))(form.amount)
     const otherErr = form.category === 'others' ? v.chain(v.required('Category name is required'), v.maxLength(50, 'Must be under 50 characters'))(form.otherCategory) : ''
 
     if (titleErr) errors.title = titleErr
@@ -183,7 +184,7 @@ export default function ExpensesClient({ data }) {
           <option value="others">Others</option>
         </select>
         <span className="text-lg font-semibold text-accent ml-auto">
-          Total: ${totalAmount.toLocaleString()} ({filtered.length})
+          Total: {formatCurrency(totalAmount)} ({filtered.length})
         </span>
       </div>
 
@@ -352,7 +353,7 @@ export default function ExpensesClient({ data }) {
                 )}
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-2xl font-bold text-accent">${expense.amount.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-accent">{formatCurrency(expense.amount)}</span>
                 {isAdmin && (
                   <div className="flex gap-2">
                     <button onClick={() => handleEdit(expense)} className="btn-primary text-sm">Edit</button>
